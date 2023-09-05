@@ -51,27 +51,28 @@ func (c checkMessage) CheckMessage(ctx context.Context, request *DouYinMessageCh
 	var userInfoTable model.UserInfoTable
 	db := common.GetDB()
 	db.Take(&userInfoTable, "name = ?", userName)
+	fromID := userInfoTable.ID
 	var messages []*Message
 	var messageList []model.MessageTable
-	err := db.Where("(from_user_id = ? AND to_user_id = ? OR to_user_id = ? AND from_user_id = ?) AND create_time > ?",
-		userInfoTable.ID, request.ToUserId, request.ToUserId, userInfoTable.ID, preTime).
+	err := db.Where("((from_user_id = ? AND to_user_id = ?) OR (to_user_id = ? AND from_user_id = ?)) AND create_time > ?",
+		fromID, request.ToUserId, fromID, request.ToUserId, preTime).
 		Find(&messageList).Error
-	if err == nil {
-		for _, messageInfo := range messageList {
-			newMessage := convertToMessage(messageInfo)
-			messages = append(messages, newMessage)
-		}
+	if err != nil {
 		msg := "success"
 		return &DouYinMessageChatResponse{
-			StatusCode:  0,
-			StatusMsg:   &msg,
-			MessageList: messages,
+			StatusCode: 0,
+			StatusMsg:  &msg,
 		}, nil
+	}
+	for _, messageInfo := range messageList {
+		newMessage := convertToMessage(messageInfo)
+		messages = append(messages, newMessage)
 	}
 	msg := "success"
 	return &DouYinMessageChatResponse{
-		StatusCode: 0,
-		StatusMsg:  &msg,
+		StatusCode:  0,
+		StatusMsg:   &msg,
+		MessageList: messages,
 	}, nil
 }
 

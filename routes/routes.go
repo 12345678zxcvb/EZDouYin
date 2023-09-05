@@ -31,6 +31,6 @@ func InitRouter(r *gin.Engine) {
 	apiRouter.GET("/relation/follow/list/", Logic.AuthMiddleware(secretKey), controller.FollowList)
 	apiRouter.GET("/relation/follower/list/", Logic.AuthMiddleware(secretKey), controller.FollowerList)
 	apiRouter.GET("/relation/friend/list/", Logic.AuthMiddleware(secretKey), controller.FriendList)
-	apiRouter.GET("/message/chat/", controller.MessageCheck)
-	apiRouter.POST("/message/action/", controller.MessageAction)
+	apiRouter.GET("/message/chat/", Logic.AuthMiddleware(secretKey), controller.MessageCheck)
+	apiRouter.POST("/message/action/", Logic.AuthMiddleware(secretKey), controller.MessageAction)
 }

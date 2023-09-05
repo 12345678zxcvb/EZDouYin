@@ -129,6 +129,7 @@ func (f friendList) FriendList(ctx context.Context, request *DouYinRelationFrien
 	var friends []*FriendUser
 	db := common.GetDB()
 	db.Take(&userInfoTable, "name= ?", userName)
+	id := userInfoTable.ID
 	friendSlice, err := FindFriendsList(db, userInfoTable.ID)
 	if err != nil {
 		msg := "success"
@@ -142,8 +143,10 @@ func (f friendList) FriendList(ctx context.Context, request *DouYinRelationFrien
 	for i := 0; i < len(friendSlice); i++ {
 		newInt := friendSlice[i]
 		db.Take(&userInfoTable1, "id = ?", newInt)
-		//newUser := convertToUser(userInfoTable1)
-		text := "无"
+		var messageTable model.MessageTable
+		db.Order("ID desc").Take(&messageTable, "from_user_id = ? OR to_user_id =?", id, id)
+
+		text := messageTable.Content
 		friend := FriendUser{
 			Id:      userInfoTable1.ID,
 			Name:    userInfoTable1.Name,
